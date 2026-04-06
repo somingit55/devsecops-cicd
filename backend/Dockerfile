@@ -1,20 +1,26 @@
 # Base image for backend
-FROM node:21 
+FROM node:21
 
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
+# Copy package.json and package-lock.json first
 COPY package*.json ./
 
-# Install required dependencies
+# Install dependencies
 RUN npm install
 
-# Copy the rest of the application code to the working directory
+# Copy rest of the application code
 COPY . .
+
+# Copy environment file (use .env or .env.sample)
 COPY .env.sample .env
-# Expose the port the app runs on
+
+# Expose backend port
 EXPOSE 5000
 
-# Command to start the backend server
+# Ensure Node runs with a stable user (avoid permission issues)
+USER node
+
+# Start the backend server
 CMD ["npm", "start"]
