@@ -1,19 +1,26 @@
-FROM node:21 
+# Base image for frontend
+FROM node:21
 
-# Set the working directory inside the container
-WORKDIR /app
+# Set working directory
+WORKDIR /frontend
 
-# Copy package.json and package-lock.json to the working directory
+# Copy package.json and package-lock.json first
 COPY package*.json ./
 
-# Install required dependencies
+# Install dependencies
 RUN npm install
 
-# Copy the rest of the application code to the working directory
+# Copy rest of the frontend code
 COPY . .
-COPY .env.sample .env
-# Expose the port the app runs on
-EXPOSE 5000
 
-# Command to start the backend server
-CMD ["npm", "start"]
+# Copy environment file
+COPY .env.sample .env.local
+
+# Expose frontend port
+EXPOSE 3000
+
+# Use non-root user to avoid permission issues
+USER node
+
+# Start frontend in dev mode with host binding
+CMD ["npm", "run", "dev", "--", "--host"]
