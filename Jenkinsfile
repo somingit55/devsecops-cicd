@@ -1,12 +1,11 @@
 pipeline {
     agent any
-
     environment {
         SONAR_HOME = tool "Sonar"
+        DEPENDENCY_CHECK_NVD_API_KEY = credentials('your-nvd-api-key-id') // Jenkins me saved credential
     }
-
+    
     stages {
-
         stage("Clone Code from GitHub") {
             steps {
                 echo "Cloning repository from GitHub..."
@@ -26,11 +25,9 @@ pipeline {
         stage("OWASP Dependency Check") {
             steps {
                 echo "Running OWASP Dependency Check..."
-                // Securely fetch NVD API key from Jenkins credentials
-                withCredentials([string(credentialsId: 'NVD_API_KEY', variable: 'DEPENDENCY_CHECK_NVD_API_KEY')]) {
-                    // Optional: --updateonly speeds up repeated runs
-                    dependencyCheck additionalArguments: '--scan ./ --format XML --out . --updateonly', odcInstallation: 'OWASP'
-                    dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+                withEnv(["DEPENDENCY_CHECK_NVD_API_KEY=$DEPENDENCY_CHECK_NVD_API_KEY"]) {
+                    dependencyCheck additionalArguments: '--scan ./ --format XML --out ./dependency-check-report', odcInstallation: 'OWASP'
+                    dependencyCheckPublisher pattern: 'dependency-check-report/dependency-check-report.xml'
                 }
             }
         }
