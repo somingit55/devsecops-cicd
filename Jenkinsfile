@@ -2,8 +2,8 @@ pipeline {
     agent any
     environment {
         SONAR_HOME = tool "Sonar"
-        // NVD API Key credential id from Jenkins Credentials
-        DEPENDENCY_CHECK_NVD_API_KEY = credentials('your-nvd-api-key-id')
+        // Correct NVD API Key credential id from Jenkins Credentials
+        DEPENDENCY_CHECK_NVD_API_KEY = credentials('NVD_API_KEY')
     }
 
     stages {
@@ -37,7 +37,6 @@ pipeline {
         stage("Sonar Quality Gate Scan") {
             steps {
                 echo "Waiting for SonarQube Quality Gate..."
-                // UNSTABLE if fails, pipeline won't abort
                 timeout(time: 2, unit: "MINUTES") {
                     waitForQualityGate abortPipeline: false
                 }
