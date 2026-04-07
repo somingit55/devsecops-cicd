@@ -3,8 +3,6 @@ pipeline {
 
     environment {
         SONAR_HOME = tool "Sonar"
-        // Jenkins me save kiya hua NVD API key ka ID 'NVD_API_KEY' use ho raha hai
-        DEPENDENCY_CHECK_NVD_API_KEY = credentials('NVD_API_KEY')
     }
 
     stages {
@@ -27,9 +25,11 @@ pipeline {
 
         stage("OWASP Dependency Check") {
             steps {
-                echo "Running OWASP Dependency Check with NVD API key..."
-                withEnv(["DEPENDENCY_CHECK_NVD_API_KEY=${DEPENDENCY_CHECK_NVD_API_KEY}"]) {
-                    dependencyCheck additionalArguments: '--scan ./ --format XML --out .', odcInstallation: 'OWASP'
+                echo "Running OWASP Dependency Check..."
+                // Securely fetch NVD API key from Jenkins credentials
+                withCredentials([string(credentialsId: 'NVD_API_KEY', variable: 'DEPENDENCY_CHECK_NVD_API_KEY')]) {
+                    // Optional: --updateonly speeds up repeated runs
+                    dependencyCheck additionalArguments: '--scan ./ --format XML --out . --updateonly', odcInstallation: 'OWASP'
                     dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
                 }
             }
@@ -37,7 +37,7 @@ pipeline {
 
         stage("Sonar Quality Gate Scan") {
             steps {
-                echo "Waiting for SonarQube Quality Gate (2 min timeout)..."
+                echo "Waiting for SonarQube Quality Gate..."
                 timeout(time: 2, unit: "MINUTES") {
                     waitForQualityGate abortPipeline: false
                 }
