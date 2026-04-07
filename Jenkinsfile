@@ -2,7 +2,8 @@ pipeline {
     agent any
     environment {
         SONAR_HOME = tool "Sonar"
-        DEPENDENCY_CHECK_NVD_API_KEY = credentials('your-nvd-api-key-id') // Jenkins me saved credential
+        // Jenkins me stored secret text ID 'NVD_API_KEY' ko read kar raha hai
+        DEPENDENCY_CHECK_NVD_API_KEY = credentials('NVD_API_KEY')
     }
     
     stages {
@@ -26,6 +27,7 @@ pipeline {
             steps {
                 echo "Running OWASP Dependency Check..."
                 withEnv(["DEPENDENCY_CHECK_NVD_API_KEY=$DEPENDENCY_CHECK_NVD_API_KEY"]) {
+                    // Explicit output folder diya hai jisse publisher report parse kar sake
                     dependencyCheck additionalArguments: '--scan ./ --format XML --out ./dependency-check-report', odcInstallation: 'OWASP'
                     dependencyCheckPublisher pattern: 'dependency-check-report/dependency-check-report.xml'
                 }
@@ -36,6 +38,7 @@ pipeline {
             steps {
                 echo "Waiting for SonarQube Quality Gate..."
                 timeout(time: 2, unit: "MINUTES") {
+                    // Agar fail ho bhi jaye, pipeline continue karega
                     waitForQualityGate abortPipeline: false
                 }
             }
@@ -44,6 +47,7 @@ pipeline {
         stage("Trivy File System Scan") {
             steps {
                 echo "Running Trivy File System Scan..."
+                // Agar secret scanning slow ho to later '--scanners vuln' option add kar sakte ho
                 sh "trivy fs --format table -o trivy-fs-report.html ."
             }
         }
