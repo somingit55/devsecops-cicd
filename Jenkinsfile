@@ -52,6 +52,19 @@ pipeline {
             }
         }
 
+        stage("Run Frontend Container") {
+            steps {
+                echo "Building and Running Frontend Container..."
+                // Purana container hata do
+                sh 'docker stop frontend-container || true'
+                sh 'docker rm frontend-container || true'
+                // Nayi image build karo
+                sh 'docker build -t frontend-image:latest ./frontend'
+                // Container run karo with bind mount (code changes turant reflect honge)
+                sh 'docker run -v ${WORKSPACE}/frontend:/app -p 3000:3000 --name frontend-container -d frontend-image:latest'
+            }
+        }
+
         stage("Deploy using Docker Compose") {
             steps {
                 echo "Deploying application using Docker Compose..."
