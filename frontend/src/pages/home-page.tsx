@@ -22,6 +22,12 @@ function HomePage() {
   return (
     <div className="w-full cursor-default bg-light dark:bg-dark">
       <Header />
+
+      {/* 👈 Visible test change - safe */}
+      <h1 className="text-red-500 text-2xl font-bold text-center mt-4">
+        Build Trigger Test 🔥
+      </h1>
+
       <div className="mx-4 md:mx-8 lg:mx-16">
         <BlogFeed />
         <h1 className="cursor-text pb-4 text-xl font-semibold dark:text-dark-primary sm:pb-0">
